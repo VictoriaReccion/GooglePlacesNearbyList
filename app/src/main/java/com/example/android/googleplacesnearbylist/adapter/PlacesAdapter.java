@@ -2,7 +2,6 @@ package com.example.android.googleplacesnearbylist.adapter;
 
 import android.content.Context;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,8 +12,6 @@ import com.example.android.googleplacesnearbylist.R;
 import com.example.android.googleplacesnearbylist.model.MyResults;
 
 import java.util.List;
-
-import static android.R.id.list;
 
 /**
  * Created by victo on 2/7/2017.
@@ -27,6 +24,8 @@ public class PlacesAdapter extends RecyclerView.Adapter {
 
     private List<MyResults> placeList;
     private LayoutInflater inflater;
+
+    private ItemClickCallback itemClickCallback;
 
     public PlacesAdapter(List<MyResults> placeList, Context context) {
         this.placeList = placeList;
@@ -73,11 +72,17 @@ public class PlacesAdapter extends RecyclerView.Adapter {
         this.placeList = placeList;
     }
 
-    private class PlaceHolder extends RecyclerView.ViewHolder {
+    public void setItemClickCallback(final ItemClickCallback itemClickCallback) {
+        this.itemClickCallback = itemClickCallback;
+    }
+
+    private class PlaceHolder extends RecyclerView.ViewHolder implements View.OnClickListener{
 
         public TextView lbl_place_name;
         public TextView lbl_place_desc;
         public TextView lbl_place_dist;
+
+        private View container;
 
         public PlaceHolder(View itemView) {
             super(itemView);
@@ -85,6 +90,14 @@ public class PlacesAdapter extends RecyclerView.Adapter {
             lbl_place_name = (TextView) itemView.findViewById(R.id.lbl_place_name);
             lbl_place_desc = (TextView) itemView.findViewById(R.id.lbl_place_snippet);
             lbl_place_dist = (TextView) itemView.findViewById(R.id.lbl_place_distance);
+            container = itemView.findViewById(R.id.cont_item_root_places);
+
+            container.setOnClickListener(this);
+        }
+
+        @Override
+        public void onClick(View v) {
+            itemClickCallback.onItemClick(getAdapterPosition());
         }
     }
 
@@ -97,6 +110,10 @@ public class PlacesAdapter extends RecyclerView.Adapter {
 
             progressBar = (ProgressBar) itemView.findViewById(R.id.progressBar);
         }
+    }
+
+    public interface ItemClickCallback {
+        void onItemClick(int p);
     }
 
 }

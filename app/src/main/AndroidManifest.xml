@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.example.android.googleplacesnearbylist">
+    <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+        package="com.example.android.googleplacesnearbylist">
 
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
 
@@ -15,11 +15,11 @@
             android:name="com.google.android.gms.version"
             android:value="@integer/google_play_services_version" />
         <!--
-             The API key for Google Maps-based APIs.
-        -->
+                 The API key for Google Maps-based APIs.
+         -->
         <meta-data
             android:name="com.google.android.geo.API_KEY"
-            android:value="AIzaSyBiu9JHHKp5_KE8BPpezlrRCeexZNhlqGY" />
+            android:value="@string/google_maps_key" />
 
         <activity android:name=".view.MainActivity">
             <intent-filter>
@@ -28,6 +28,9 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <activity android:name="com.example.android.googleplacesnearbylist.view.MapsActivity"
+            android:label="@string/title_activity_maps"/>
     </application>
 
 </manifest>

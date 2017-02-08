@@ -1,5 +1,6 @@
 package com.example.android.googleplacesnearbylist.view;
 
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Handler;
@@ -42,7 +43,8 @@ import static android.R.id.list;
 public class MainActivity extends AppCompatActivity implements
         GoogleApiClient.ConnectionCallbacks,
         GoogleApiClient.OnConnectionFailedListener,
-        LocationListener {
+        LocationListener,
+        PlacesAdapter.ItemClickCallback {
 
     private static final String TAG = MainActivity.class.getSimpleName();
 
@@ -72,17 +74,28 @@ public class MainActivity extends AppCompatActivity implements
     private static final String KEY_LOCATION = "location";
 
     private static final int RADIUS = 500;
-    private static final String API_KEY_PLACES = "AIzaSyDATMRQZYxWnI4tRkMxcNYgzlYWUgacIgk";
+    public static final String API_KEY_PLACES = "AIzaSyDATMRQZYxWnI4tRkMxcNYgzlYWUgacIgk";
 
     private boolean hasItemsLeft = true;
     private boolean isInit = false;
 
+    private String next_page_token;
+
+    // View Items
     private RecyclerView recView;
     private PlacesAdapter adapter;
     private List<MyResults> nearbyPlaces;
     private EndlessRecyclerViewScrollListener scrollListener;
     private LinearLayoutManager linearLayoutManager;
     private Handler handler;
+
+    // For intent extra
+    public static final String EXTRA_CURR_LAT = "EXTRA_CURR_LAT";
+    public static final String EXTRA_CURR_LNG = "EXTRA_CURR_LNG";
+    public static final String EXTRA_CURR_TITLE = "EXTRA_CURR_TITLE";
+    public static final String EXTRA_DEST_LAT = "EXTRA_DEST_LAT";
+    public static final String EXTRA_DEST_LNG = "EXTRA_DEST_LNG";
+    public static final String EXTRA_DEST_TITLE = "EXTRA_DEST_TITLE";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -216,11 +229,6 @@ public class MainActivity extends AppCompatActivity implements
             initData();
             isInit = true;
         }
-
-//        // Build the map.
-//        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
-//                .findFragmentById(R.id.map);
-//        mapFragment.getMapAsync(this);
     }
 
     /**
@@ -264,6 +272,7 @@ public class MainActivity extends AppCompatActivity implements
                         // 1. parse json
                         final MyPlace myPlace = PlacesJSONParser.parseAndGetResult(response);
                         nearbyPlaces = myPlace.getResults();
+                        next_page_token = myPlace.getNextPageToken();
 
                         // 2. set distances from current location
                         for(int i = 0; i < nearbyPlaces.size(); i ++) {
@@ -279,6 +288,7 @@ public class MainActivity extends AppCompatActivity implements
                         recView.setLayoutManager(linearLayoutManager);
                         adapter = new PlacesAdapter(nearbyPlaces, MainActivity.this);
                         recView.setAdapter(adapter);
+                        adapter.setItemClickCallback(MainActivity.this);
 
                         // 4. set up scrolllistener
                         scrollListener = new EndlessRecyclerViewScrollListener(linearLayoutManager)
@@ -308,7 +318,7 @@ public class MainActivity extends AppCompatActivity implements
                                             nearbyPlaces.remove(nearbyPlaces.size()-1);
 
                                             // 4. load data
-                                            getNextPage(myPlace.getNextPageToken());
+                                            getNextPage(next_page_token);
 
                                             // 5. set handler to null for next loading
                                             handler = null;
@@ -348,6 +358,7 @@ public class MainActivity extends AppCompatActivity implements
                         // 1. parse json
                         MyPlace myPlace = PlacesJSONParser.parseAndGetResult(response);
                         List<MyResults> nearbyPlaces2 = myPlace.getResults();
+                        setNextPageToken(myPlace.getNextPageToken());
 
                         // 2. set distances from current location
                         for(int i = 0; i < nearbyPlaces2.size(); i ++) {
@@ -387,5 +398,23 @@ public class MainActivity extends AppCompatActivity implements
                 dest_latitude, dest_longitude, results);
 
         return String.format(java.util.Locale.US,"%.3f", (results[0]/1000));
+    }
+
+    @Override
+    public void onItemClick(int p) {
+        Intent intent = new Intent(this, MapsActivity.class);
+
+        intent.putExtra(EXTRA_CURR_LAT, mCurrentLocation.getLatitude());
+        intent.putExtra(EXTRA_CURR_LNG, mCurrentLocation.getLongitude());
+        intent.putExtra(EXTRA_CURR_TITLE, "Your Location");
+        intent.putExtra(EXTRA_DEST_LAT, nearbyPlaces.get(p).getGeometry().getLocation().getLat());
+        intent.putExtra(EXTRA_DEST_LNG, nearbyPlaces.get(p).getGeometry().getLocation().getLng());
+        intent.putExtra(EXTRA_DEST_TITLE, nearbyPlaces.get(p).getName());
+
+        startActivity(intent);
+    }
+
+    private void setNextPageToken(String next_page_token) {
+        this.next_page_token = next_page_token;
     }
 }

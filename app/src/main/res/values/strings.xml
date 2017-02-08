@@ -3,4 +3,5 @@
     <string name="place_name">Name of Place</string>
     <string name="place_desc">Description of Place</string>
     <string name="place_dist">0.00 KM</string>
+    <string name="title_activity_maps">Map</string>
 </resources>
