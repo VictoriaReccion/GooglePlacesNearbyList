@@ -2,9 +2,11 @@ package com.example.android.googleplacesnearbylist.view;
 
 import android.content.Intent;
 import android.graphics.Color;
-import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
+import android.support.v7.app.ActionBar;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.android.volley.Request;
@@ -35,7 +37,7 @@ import com.google.android.gms.maps.model.PolylineOptions;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
+public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback {
 
     private GoogleMap mMap;
 
@@ -45,15 +47,18 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private double dest_lng;
     private String curr_title;
     private String dest_title;
+    private String distance;
 
     private String GOOGLE_JSON_URL;
     private static final String MODE_DRIVING = "driving";
     private static final String MODE_WALKING = "walking";
 
-    private static final int DEFAULT_ZOOM = 17;
-
     private ArrayList<Marker> markers;
     private DirectionObject directionObject;
+
+    private TextView lbl_mylocation;
+    private TextView lbl_destlocation;
+    private TextView lbl_maps_distance;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -68,6 +73,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         dest_lng = intent.getDoubleExtra(MainActivity.EXTRA_DEST_LNG, -1);
         curr_title = intent.getStringExtra(MainActivity.EXTRA_CURR_TITLE);
         dest_title = intent.getStringExtra(MainActivity.EXTRA_DEST_TITLE);
+        distance = intent.getStringExtra(MainActivity.EXTRA_DISTANCE);
 
         GOOGLE_JSON_URL =
                 "https://maps.googleapis.com/maps/api/directions/json?" +
@@ -77,6 +83,15 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         "key=" + MainActivity.API_KEY_PLACES;
 
         markers = new ArrayList<>();
+
+        // set action bar
+        ActionBar actionBar = getSupportActionBar();
+        actionBar.hide();
+
+        // set views
+        lbl_mylocation = (TextView) findViewById(R.id.lbl_mylocation);
+        lbl_destlocation = (TextView) findViewById(R.id.lbl_destlocation);
+        lbl_maps_distance = (TextView) findViewById(R.id.lbl_maps_distance);
 
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
@@ -139,6 +154,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         // draw on map
                         drawRouteOnMap(mMap, mDirections);
 
+                        // set views
+                        setViews();
+
                     }
                 }, new Response.ErrorListener() {
             @Override
@@ -191,7 +209,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         LatLngBounds bounds = builder.build();
 
-        mMap.animateCamera(CameraUpdateFactory.newLatLngBounds(bounds, DEFAULT_ZOOM));
+        mMap.animateCamera(CameraUpdateFactory.newLatLngBounds(bounds, 30));
     }
     /**
      * Method to decode polyline points
@@ -227,6 +245,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         return poly;
     }
 
+    private void setViews() {
 
+        lbl_mylocation.setText(
+                directionObject.getRoutes().get(0).getLegs().get(0).getStartAddress());
+        lbl_destlocation.setText(
+                directionObject.getRoutes().get(0).getLegs().get(0).getEndAddress());
+        lbl_maps_distance.setText(distance);
+    }
 
 }

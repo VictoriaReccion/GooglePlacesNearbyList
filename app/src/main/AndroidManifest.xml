@@ -29,8 +29,10 @@
             </intent-filter>
         </activity>
 
-        <activity android:name="com.example.android.googleplacesnearbylist.view.MapsActivity"
-            android:label="@string/title_activity_maps"/>
+        <activity
+            android:name="com.example.android.googleplacesnearbylist.view.MapsActivity"
+            android:label="@string/title_activity_maps"
+            android:theme="@style/AppTheme"/>
     </application>
 
 </manifest>

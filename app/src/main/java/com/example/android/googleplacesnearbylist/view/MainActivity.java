@@ -23,6 +23,8 @@ import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.example.android.googleplacesnearbylist.R;
 import com.example.android.googleplacesnearbylist.adapter.PlacesAdapter;
+import com.example.android.googleplacesnearbylist.model.MyGeometry;
+import com.example.android.googleplacesnearbylist.model.MyLatLng;
 import com.example.android.googleplacesnearbylist.model.MyPlace;
 import com.example.android.googleplacesnearbylist.model.MyResults;
 import com.example.android.googleplacesnearbylist.parser.PlacesJSONParser;
@@ -36,6 +38,7 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static android.R.id.list;
@@ -96,6 +99,7 @@ public class MainActivity extends AppCompatActivity implements
     public static final String EXTRA_DEST_LAT = "EXTRA_DEST_LAT";
     public static final String EXTRA_DEST_LNG = "EXTRA_DEST_LNG";
     public static final String EXTRA_DEST_TITLE = "EXTRA_DEST_TITLE";
+    public static final String EXTRA_DISTANCE = "EXTRA_DISTANCE";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -226,7 +230,8 @@ public class MainActivity extends AppCompatActivity implements
 
         // initialize the data
         if(!isInit) {
-            initData();
+            // initData();
+            initData2();
             isInit = true;
         }
     }
@@ -410,11 +415,50 @@ public class MainActivity extends AppCompatActivity implements
         intent.putExtra(EXTRA_DEST_LAT, nearbyPlaces.get(p).getGeometry().getLocation().getLat());
         intent.putExtra(EXTRA_DEST_LNG, nearbyPlaces.get(p).getGeometry().getLocation().getLng());
         intent.putExtra(EXTRA_DEST_TITLE, nearbyPlaces.get(p).getName());
+        intent.putExtra(EXTRA_DISTANCE, nearbyPlaces.get(p).getDistance());
 
         startActivity(intent);
     }
 
     private void setNextPageToken(String next_page_token) {
         this.next_page_token = next_page_token;
+    }
+
+    private void initData2() {
+
+        // initialize list
+        nearbyPlaces = new ArrayList<>();
+
+        // add places on nearbyPlaces
+        MyResults myHome = new MyResults();
+
+        // 1. add latitude and longitude
+        MyLatLng myLatLng = new MyLatLng();
+        myLatLng.setLat(14.421016);
+        myLatLng.setLng(121.003349);
+        myHome.setGeometry(new MyGeometry());
+        myHome.getGeometry().setLocation(myLatLng);
+
+        // 2. add vicinity
+        myHome.setVicinity("Pasonanca Park, Teresa Park Subdivision, Talon Singko, Las Pinas City");
+
+        // 3. add title
+        myHome.setName("My Home");
+
+        // 4. set distance
+        myHome.setDistance(
+                getDistanceBetween(mCurrentLocation.getLatitude(), mCurrentLocation.getLongitude(),
+                        myLatLng.getLat(), myLatLng.getLng())
+        );
+
+        // add to list
+        nearbyPlaces.add(myHome);
+
+        // set up recycler view
+        recView = (RecyclerView) findViewById(R.id.rec_list_places);
+        recView.setLayoutManager(linearLayoutManager);
+        adapter = new PlacesAdapter(nearbyPlaces, MainActivity.this);
+        recView.setAdapter(adapter);
+        adapter.setItemClickCallback(MainActivity.this);
     }
 }
